@@ -2,7 +2,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { neonDB } = require('../middlewares/database');
-const { resend,transporter } = require('../middlewares/database');
+const { resend, transporter } = require('../middlewares/database');
 
 const minLength = 8;
 const regex = {
@@ -66,8 +66,8 @@ async function registerUser(req, res) {
             from: process.env.EMAIL,
             to: email,
             subject: 'Thanks for registeration',
-            text: 'Welcome to our website.' 
-            
+            text: 'Welcome to our website.'
+
         };
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
@@ -169,8 +169,8 @@ async function createSuperUser(req, res) {
             from: process.env.EMAIL,
             to: email,
             subject: 'Thanks for registeration',
-            text: 'Welcome to our website.' 
-            
+            text: 'Welcome to our website.'
+
         };
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
@@ -188,12 +188,12 @@ async function createSuperUser(req, res) {
 
 
 
-async function resetpassword(req,res){
-    const email=req.body.email;
+async function resetpassword(req, res) {
+    const email = req.body.email;
     const otp = generateOTP();
     const payload = {
         user_id: email,
-        otp:otp
+        otp: otp
     };
 
     const options = {
@@ -206,8 +206,8 @@ async function resetpassword(req,res){
         to: email,
         subject: 'RESET password',
         text: `Click on this link to reset password
-        ${websiteUrl}/api/reset/${token} with otp ${otp}` 
-        
+        ${websiteUrl}/api/reset/${token} with otp ${otp}`
+
     };
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
@@ -218,7 +218,7 @@ async function resetpassword(req,res){
     });
 }
 
-async function reset(req,res){
+async function reset(req, res) {
     const token = req.params.id;
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized: No token provided' });
@@ -232,7 +232,7 @@ async function reset(req,res){
         req.body.email = decodedToken.user_id;
         req.body.otp1 = decodedToken.otp;
     });
-    const password=req.body.password;
+    const password = req.body.password;
     if (password.length < minLength) {
         return res.json('Password must be at least ' + minLength + ' characters long');
     }
@@ -249,15 +249,15 @@ async function reset(req,res){
         return res.json('Password must contain at least one special character');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    if(parseInt(req.body.otp1)==parseInt(req.body.otp)){
-        const data=await neonDB`UPDATE users 
+    if (parseInt(req.body.otp1) == parseInt(req.body.otp)) {
+        const data = await neonDB`UPDATE users 
         SET password = ${hashedPassword} 
         WHERE email = ${req.body.email}`;
         res.status(200).json("success");
     }
-    else{
-        return res.status(401).json({message:"invalid otp"});
+    else {
+        return res.status(401).json({ message: "invalid otp" });
     }
 }
 
-module.exports = { registerUser, loginUser, createSuperUser,getAllUsers,resetpassword,reset };
+module.exports = { registerUser, loginUser, createSuperUser,  resetpassword, reset };
