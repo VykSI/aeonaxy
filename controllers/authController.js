@@ -2,7 +2,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { neonDB } = require('../middlewares/database');
-const { resend } = require('../middlewares/database');
+const { resend,transporter } = require('../middlewares/database');
 
 const minLength = 8;
 const regex = {
@@ -11,6 +11,17 @@ const regex = {
     digit: /\d/,
     special: /[!@#$%^&*(),.?":{}|<>]/
 };
+
+const crypto = require('crypto');
+
+function generateOTP() {
+    // Generate a secure random number between 100000 and 999999
+    const otp = crypto.randomInt(100000, 999999);
+    return otp.toString(); // Convert to string
+}
+
+
+
 
 async function registerUser(req, res) {
     try {
@@ -50,6 +61,20 @@ async function registerUser(req, res) {
             to: email,
             subject: 'Hello World',
             html: '<p>Thanks for registering</p>'
+        });
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: email,
+            subject: 'Thanks for registeration',
+            text: 'Welcome to our website.' 
+            
+        };
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error occurred while sending email:', error);
+            } else {
+                console.log('Email sent successfully:', info.response);
+            }
         });
 
         return res.status(201).json({ message: 'User registered successfully', userId: newUser[0].id });
@@ -139,6 +164,21 @@ async function createSuperUser(req, res) {
             subject: 'Hello World',
             html: '<p>Thanks for registering</p>'
         });
+
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: email,
+            subject: 'Thanks for registeration',
+            text: 'Welcome to our website.' 
+            
+        };
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error occurred while sending email:', error);
+            } else {
+                console.log('Email sent successfully:', info.response);
+            }
+        });
         return res.status(201).json({ message: 'User registered successfully', userId: newUser[0].id });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -146,11 +186,78 @@ async function createSuperUser(req, res) {
     }
 }
 
-async function  getAllUsers(req, res) {
-    const p=req.params.id;
-    console.log(p);
-    const data=await neonDB`select * from users where email=${p}`;
-    res.json(data);
+
+
+async function resetpassword(req,res){
+    const email=req.body.email;
+    const otp = generateOTP();
+    const payload = {
+        user_id: email,
+        otp:otp
+    };
+
+    const options = {
+        expiresIn: '1h'
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, options);
+    const websiteUrl = `${req.protocol}://${req.get('host')}`;
+    const mailOptions = {
+        from: process.env.EMAIL,
+        to: email,
+        subject: 'RESET password',
+        text: `Click on this link to reset password
+        ${websiteUrl}/api/reset/${token} with otp ${otp}` 
+        
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return res.status(500);
+        } else {
+            return res.status(200);
+        }
+    });
 }
 
-module.exports = { registerUser, loginUser, createSuperUser,getAllUsers };
+async function reset(req,res){
+    const token = req.params.id;
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized: No token provided' });
+    }
+
+    await jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
+        if (err) {
+            return res.status(403).json({ message: 'Invalid token' });
+        }
+
+        req.body.email = decodedToken.user_id;
+        req.body.otp1 = decodedToken.otp;
+    });
+    const password=req.body.password;
+    if (password.length < minLength) {
+        return res.json('Password must be at least ' + minLength + ' characters long');
+    }
+    if (!regex.lowercase.test(password)) {
+        return res.json('Password must contain at least one lowercase letter');
+    }
+    if (!regex.uppercase.test(password)) {
+        return res.json('Password must contain at least one uppercase letter');
+    }
+    if (!regex.digit.test(password)) {
+        return res.json('Password must contain at least one digit');
+    }
+    if (!regex.special.test(password)) {
+        return res.json('Password must contain at least one special character');
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    if(parseInt(req.body.otp1)==parseInt(req.body.otp)){
+        const data=await neonDB`UPDATE users 
+        SET password = ${hashedPassword} 
+        WHERE email = ${req.body.email}`;
+        res.status(200).json("success");
+    }
+    else{
+        return res.status(401).json({message:"invalid otp"});
+    }
+}
+
+module.exports = { registerUser, loginUser, createSuperUser,getAllUsers,resetpassword,reset };

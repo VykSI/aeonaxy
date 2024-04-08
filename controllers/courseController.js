@@ -82,6 +82,21 @@ async function registerCourse(req, res) {
             subject: 'Hello World',
             html: '<p>Thanks for registering to this course</p>'
         });
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: email,
+            subject: 'enrolled',
+            text: '<p>You have enerolled for the course</p>'
+            
+        };
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error occurred while sending email:', error);
+            } else {
+                console.log('Email sent successfully:', info.response);
+            }
+        });
+        
         res.status(201).json(registrationData[0]);
     } catch (err) {
         console.log(err);
@@ -111,6 +126,20 @@ async function unenrollCourse(req, res) {
             subject: 'Hello World',
             html: '<p>You have unenerolled from this course</p>'
         });
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: email,
+            subject: 'Unenrolled',
+            text: '<p>You have unenerolled from this course</p>'
+            
+        };
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error occurred while sending email:', error);
+            } else {
+                console.log('Email sent successfully:', info.response);
+            }
+        });
         res.status(200).json({ message: "User successfully unenrolled from the course" });
     } catch (err) {
         console.log(err);
@@ -121,12 +150,17 @@ async function unenrollCourse(req, res) {
 async function getCourseUsers(req, res) {
     try {
         const courseId = req.params.courseId;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 1;
+
+        const offset = (page - 1) * limit;
 
         const usersInCourse = await neonDB`
-      SELECT users.username
-      FROM users
-      JOIN user_courses ON users.id = user_courses.user_id
-      WHERE user_courses.course_id = ${courseId}`;
+            SELECT users.username
+            FROM users
+            JOIN user_courses ON users.id = user_courses.user_id
+            WHERE user_courses.course_id = ${courseId}
+            LIMIT ${limit} OFFSET ${offset}`;
 
         res.status(200).json(usersInCourse);
     } catch (err) {
@@ -135,33 +169,39 @@ async function getCourseUsers(req, res) {
     }
 }
 
+
 async function getCourseFilter(req, res) {
     try {
         const rating = req.query.rating || null;
         const difficulty = req.query.difficulty || null;
+        const page = parseInt(req.query.page) || 1;
+        const limit = 1;
         let data;
 
         if (rating === null && difficulty === null) {
-            data = await neonDB`SELECT *
-FROM courses
-WHERE difficulty = ANY (ARRAY['beginner', 'intermediate', 'advanced']::difficulty_level[])
-  AND rating = ANY (ARRAY['0', '1', '2', '3', '4', '5']::rating_value[])`;
-        }
-        else if (rating !== null && difficulty !== null) {
-            data = await neonDB`SELECT * 
-        FROM courses
-        WHERE difficulty = ${difficulty}
-          AND rating = ${rating}`;
-        }
-        else if (difficulty !== null) {
-            data = await neonDB`SELECT * 
-FROM courses
-WHERE difficulty = ${difficulty}`;
-        }
-        else if (rating !== null) {
-            data = await neonDB`SELECT *
-FROM courses
-WHERE rating = ${rating}`;
+            const offset = (page - 1) * limit;
+            data = await neonDB`
+                SELECT *
+                FROM courses
+                WHERE difficulty = ANY (ARRAY['beginner', 'intermediate', 'advanced']::difficulty_level[])
+                  AND rating = ANY (ARRAY['0', '1', '2', '3', '4', '5']::rating_value[])
+                LIMIT ${limit} OFFSET ${offset}`;
+        } else if (rating !== null && difficulty !== null) {
+            data = await neonDB`
+                SELECT * 
+                FROM courses
+                WHERE difficulty = ${difficulty}
+                  AND rating = ${rating}`;
+        } else if (difficulty !== null) {
+            data = await neonDB`
+                SELECT * 
+                FROM courses
+                WHERE difficulty = ${difficulty}`;
+        } else if (rating !== null) {
+            data = await neonDB`
+                SELECT *
+                FROM courses
+                WHERE rating = ${rating}`;
         }
         res.status(200).json(data);
     } catch (e) {
@@ -169,6 +209,7 @@ WHERE rating = ${rating}`;
         res.status(500).json("server error");
     }
 }
+
 
 module.exports = {
     createCourse,
