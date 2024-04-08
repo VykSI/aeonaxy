@@ -105,7 +105,7 @@ Pagination has been limited to 5
 
     Headers:
 ```json
-Authorization:<token_after_login_response_Data>"
+Authorization: "<token_after_login_response_Data>"
 ```
 
    Test Form-Data:
@@ -125,7 +125,7 @@ Authorization:<token_after_login_response_Data>"
    
     Headers:
 ```json
-Authorization:<token_after_login_response_Data>"
+Authorization: "<token_after_login_response_Data>"
 ```
    
    Test JSON Data:
@@ -143,7 +143,7 @@ Authorization:<token_after_login_response_Data>"
     Description: Retrieves details of a specific user.
     Headers:
 ```json
-Authorization:<token_after_login_response_Data>"
+Authorization: "<token_after_login_response_Data>"
 ```
    
    Test JSON Data: No request body required.
@@ -185,7 +185,7 @@ You will receive a mail from the website that url has to be pasted in postman an
    
     Headers:
 ```json
-Authorization:<token_after_login_response_Data>"
+Authorization: "<token_after_login_response_Data>"
 ```
    
    Test JSON Data:
@@ -209,7 +209,7 @@ Authorization:<token_after_login_response_Data>"
    
     Headers:
 ```json
-Authorization:<token_after_login_response_Data>"
+Authorization: "<token_after_login_response_Data>"
 ```
    
    Test JSON Data:
@@ -233,7 +233,7 @@ Authorization:<token_after_login_response_Data>"
    
     Headers:
 ```json
-Authorization:<token_after_login_response_Data>"
+Authorization: "<token_after_login_response_Data>"
 ```
    
    Test JSON Data: No request body required.
@@ -248,7 +248,7 @@ Authorization:<token_after_login_response_Data>"
    
     Headers:
 ```json
-Authorization:<token_after_login_response_Data>"
+Authorization: "<token_after_login_response_Data>"
 ```
    
    No Test JSON Data
@@ -261,7 +261,7 @@ Authorization:<token_after_login_response_Data>"
    
     Headers:
 ```json
-Authorization:<token_after_login_response_Data>"
+Authorization: "<token_after_login_response_Data>"
 ```
 
    No Test JSON Data
@@ -277,7 +277,7 @@ Authorization:<token_after_login_response_Data>"
    
     Headers:
 ```json
-Authorization:<token_after_login_response_Data>"
+Authorization: "<token_after_login_response_Data>"
 ```
 
    Test JSON Data: No request body required.
