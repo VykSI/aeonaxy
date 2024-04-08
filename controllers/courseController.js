@@ -151,7 +151,7 @@ async function getCourseUsers(req, res) {
     try {
         const courseId = req.params.courseId;
         const page = parseInt(req.query.page) || 1;
-        const limit = 1;
+        const limit = 5;
 
         const offset = (page - 1) * limit;
 
@@ -175,7 +175,7 @@ async function getCourseFilter(req, res) {
         const rating = req.query.rating || null;
         const difficulty = req.query.difficulty || null;
         const page = parseInt(req.query.page) || 1;
-        const limit = 1;
+        const limit = 5;
         let data;
 
         if (rating === null && difficulty === null) {
