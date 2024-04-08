@@ -40,7 +40,7 @@ router.put('/updatecourse/:id', authenticateJWT, validateUser, updateCourse);
 router.delete('/deletecourse/:id', authenticateJWT, validateUser, deleteCourse);
 router.post('/registercourse/:courseId', authenticateJWT, registerCourse);
 router.delete('/unenrollcourse/:courseId', authenticateJWT, unenrollCourse);
-router.get('/courseusers/:courseId', authenticateJWT, getCourseUsers);
+router.get('/courseusers/:courseId', authenticateJWT,validateUser, getCourseUsers);
 router.get('/coursefilter', getCourseFilter);
 router.post('/resetpassword',resetpassword);
 router.post('/reset/:id',reset);
