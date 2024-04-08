@@ -121,7 +121,7 @@ async function loginUser(req, res) {
     }
     catch (err) {
         console.log(err);
-        res.status(500)
+        res.status(500).json("Server Error");
     }
 }
 
@@ -211,9 +211,9 @@ async function resetpassword(req, res) {
     };
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            return res.status(500);
+            return res.status(500).json("Server error");
         } else {
-            return res.status(200);
+            return res.status(200).json("Email Sent");
         }
     });
 }
